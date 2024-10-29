@@ -34,15 +34,14 @@
                         <label class="form-label">Danh mục phụ</label>
                     </div>
                     <select multiple name="catalogue[]" class="form-control setupSelect2">
-                        @foreach ($dropdown as $key => $val)
-                        <option
+                        @foreach($dropdown as $key => $val)
+                        <option 
                             @if(is_array(old('catalogue', (
                                 isset($catalogue) && count($catalogue)) ?   $catalogue : [])
                                 ) && isset($post->post_catalogue_id) && $key !== $post->post_catalogue_id &&  in_array($key, old('catalogue', (isset($catalogue)) ? $catalogue : []))
                             )
                             selected
-                            @endif value="{{ $key }}">{{ $val }}
-                        </option>
+                            @endif value="{{ $key }}">{{ $val }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -81,7 +80,7 @@
                 <div class="form-row">
                     <div class="mb-15">
                         <select name="publish" class="form-control setupSelect2">
-                        @foreach (config('apps.general.publish') as $key => $val)
+                        @foreach (__('messages.publish') as $key => $val)
                             <option 
                                 {{$key == old('publish', (isset($post->publish)) ? $post->publish : '')
                                 ? 'selected' : ''}}
@@ -93,7 +92,7 @@
                     </div>
                     <div class="mb-15">
                         <select name="follow" class="form-control setupSelect2">
-                        @foreach (config('apps.general.follow') as $key => $val)
+                        @foreach (__('messages.follow') as $key => $val)
                         <option 
                             {{$key == old('follow', (isset($post->follow)) ? $post->follow : '')
                             ? 'selected' : ''}}

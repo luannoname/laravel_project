@@ -30,7 +30,7 @@
             <div class="col-lg-12 mb-15">
                 <div class="form-row">
                     <span class="image img-cover image-target">
-                        <img width="225px" src="{{ old('image', ($postCatalogue->image) ?? '') ?? 'backend/img/not-found-img.jpg' }}" alt="">
+                        <img width="225px" src="{{ old('image', ($postCatalogue->image) ?? 'backend/img/not-found-img.jpg') ?? 'backend/img/not-found-img.jpg' }}" alt="">
                     </span>
                     <input
                     type="hidden"
@@ -52,7 +52,7 @@
                 <div class="form-row">
                     <div class="mb-15">
                         <select name="publish" class="form-control setupSelect2">
-                        @foreach (config('apps.general.publish') as $key => $val)
+                        @foreach (__('messages.publish') as $key => $val)
                             <option 
                                 {{$key == old('publish', (isset($postCatalogue->publish)) ? $postCatalogue->publish : '')
                                 ? 'selected' : ''}}
@@ -64,7 +64,7 @@
                     </div>
                     <div class="mb-15">
                         <select name="follow" class="form-control setupSelect2">
-                        @foreach (config('apps.general.follow') as $key => $val)
+                        @foreach (__('messages.follow') as $key => $val)
                         <option 
                             {{$key == old('follow', (isset($postCatalogue->follow)) ? $postCatalogue->follow : '')
                             ? 'selected' : ''}}

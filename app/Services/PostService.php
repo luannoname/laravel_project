@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\Interfaces\PostRepositoryInterface as PostRepository;
+use App\Repositories\Interfaces\RouterRepositoryInterface as RouterRepository;
 use App\Services\BaseService;
 use App\Services\Interfaces\PostServiceInterface;
 use Illuminate\Support\Facades\Auth;
@@ -18,13 +19,17 @@ use Illuminate\Support\Str;
 class PostService extends BaseService implements PostServiceInterface
 {
     protected $postRepository;
+    protected $routerRepository;
     protected $language;
 
     public function __construct(
         PostRepository $postRepository,
+        RouterRepository $routerRepository,
     ) {
         $this->language = $this->currentLanguage();
         $this->postRepository = $postRepository;
+        $this->routerRepository = $routerRepository;
+        $this->controllerName = 'PostController';
     }
     public function paginate($request) {
         $condition['keyword'] = addslashes($request->input('keyword'));
@@ -56,6 +61,7 @@ class PostService extends BaseService implements PostServiceInterface
             if ($post->id > 0) {
                 $this->updateLanguageForPost($post, $request);
                 $this->updateCatalogueForPost($post, $request);
+                $this->createRouter($post, $request, $this->controllerName);
             }
             DB::commit();
             return true;
@@ -74,6 +80,7 @@ class PostService extends BaseService implements PostServiceInterface
             if ($this->uploadPost($post, $request)) {
                 $this->updateLanguageForPost($post, $request);
                 $this->updateCatalogueForPost($post, $request);
+                $this->updateRouter($post, $request, $this->controllerName);
             }
             DB::commit();
             return true;
@@ -117,7 +124,7 @@ class PostService extends BaseService implements PostServiceInterface
     private function updateLanguageForPost($post, $request) {
         $payload = $request->only($this->payloadLanguage());
         $payload = $this->formatLanguagePayload($payload, $post->id);
-        // $post->languages()->detach([$this->language]);
+        $post->languages()->detach([$this->language]);
         return $this->postRepository->createPivot($post, $payload, 'languages');
     }
 
@@ -130,10 +137,6 @@ class PostService extends BaseService implements PostServiceInterface
         $payload['language_id'] = $this->language;
         $payload['post_id'] = $postId;
         return $payload;
-    }
-
-    private function formatAlbum($request) {
-        return ($request->input('album') && !empty($request->input('album'))) ? json_encode($request->input('album')) : '';
     }
 
     private function catalogue($request) {

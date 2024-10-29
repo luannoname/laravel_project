@@ -20,7 +20,7 @@
                         $postCatalogueId = request('post_catalogue_id') ?: old('post_catalogue_id');
                     @endphp
                     <select name="publish" class="form-control mr-10 setupSelect2">
-                        @foreach (config('apps.general.publish') as $key => $val)
+                        @foreach (__('messages.publish') as $key => $val)
                             <option {{ ($publish == $key) ? 'selected' : '' }} value="{{ $key }}">{{ $val }}</option>   
                         @endforeach
                     </select>

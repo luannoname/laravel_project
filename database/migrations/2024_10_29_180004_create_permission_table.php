@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('routers', function (Blueprint $table) {
+        Schema::create('permission', function (Blueprint $table) {
             $table->id();
-            $table->string('canonical')->unique();
-            $table->unsignedBigInteger('module_id');
-            $table->string('controllers');
             $table->timestamps();
         });
     }
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('routers');
+        Schema::dropIfExists('permission');
     }
 };
