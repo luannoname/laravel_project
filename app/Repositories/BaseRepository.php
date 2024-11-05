@@ -38,7 +38,7 @@ class BaseRepository implements BaseRepositoryInterface
                     ->customWhereRaw($rawQuery['whereRaw'] ?? null)
                     ->customJoin($join ?? null)
                     ->customGroupBy($extend['groupBy'] ?? null)
-                    ->customOrderBy($orderBy['orderBy'] ?? null)
+                    ->customOrderBy($orderBy ?? null)
                     ->paginate($perpage)
                     ->withQueryString()->withPath(config('app.url').$extend['path']);
     }
@@ -77,8 +77,8 @@ class BaseRepository implements BaseRepositoryInterface
         return $this->findById($id)->forceDelete();
     }
 
-    public function all() {
-        return $this->model->all();
+    public function all(array $relation = []) {
+        return $this->model->with($relation)->get();
     }
 
     public function findById(

@@ -4,7 +4,9 @@ use App\Http\Controllers\Ajax\DashboardController as AjaxDashboardController;
 use App\Http\Controllers\Ajax\LocationController;
 use App\Http\Controllers\Backend\AuthController;
 use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\GenerateController;
 use App\Http\Controllers\Backend\LanguageController;
+use App\Http\Controllers\Backend\PermissionController;
 use App\Http\Controllers\Backend\PostCatalogueController;
 use App\Http\Controllers\Backend\PostController;
 use App\Http\Controllers\Backend\UserCatalogueController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\Backend\UserController;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\AuthenticateMiddleware;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -72,6 +75,10 @@ Route::group(['middleware' => ['admin', 'locale']], function () {
         ->name('delete');
         Route::delete('{id}/destroy', [UserCatalogueController::class, 'destroy'])
         ->name('destroy');
+        Route::get('permission', [UserCatalogueController::class, 'permission'])
+        ->name('permission');
+        Route::post('updatePermission', [UserCatalogueController::class, 'updatePermission'])
+        ->name('updatePermission');
     });
     // LANGUAGE
     Route::prefix('language/')->name('language.')->group(function () {
@@ -91,7 +98,30 @@ Route::group(['middleware' => ['admin', 'locale']], function () {
         ->name('destroy');
         Route::get('{id}/switch', [LanguageController::class, 'swithBackendLanguage'])
         ->name('switch');
+        Route::get('{id}/{languageId}/{model}/translate', [LanguageController::class, 'translate'])
+        ->name('translate');
+        Route::post('storeTranslate', [LanguageController::class, 'storeTranslate'])
+        ->name('storeTranslate');
     });
+
+    // LANGUAGE
+    Route::prefix('generate/')->name('generate.')->group(function () {
+        Route::get('index', [GenerateController::class, 'index'])
+        ->name('index')->middleware('locale');
+        Route::get('create', [GenerateController::class, 'create'])
+        ->name('create');
+        Route::post('store', [GenerateController::class, 'store'])
+        ->name('store');
+        Route::get('{id}/edit', [GenerateController::class, 'edit'])
+        ->name('edit');
+        Route::post('{id}/update', [GenerateController::class, 'update'])
+        ->name('update');
+        Route::get('{id}/delete', [GenerateController::class, 'delete'])
+        ->name('delete');
+        Route::delete('{id}/destroy', [GenerateController::class, 'destroy'])
+        ->name('destroy');
+    });
+
     // POST CATALOGUE
     Route::prefix('post/catalogue/')->name('post.catalogue.')->group(function () {
         Route::get('index', [PostCatalogueController::class, 'index'])
@@ -110,7 +140,7 @@ Route::group(['middleware' => ['admin', 'locale']], function () {
         ->name('destroy');
     });
 
-    // POST CATALOGUE
+    // POST
     Route::prefix('post/')->name('post.')->group(function () {
         Route::get('index', [PostController::class, 'index'])
         ->name('index');
@@ -125,6 +155,24 @@ Route::group(['middleware' => ['admin', 'locale']], function () {
         Route::get('{id}/delete', [PostController::class, 'delete'])
         ->name('delete');
         Route::delete('{id}/destroy', [PostController::class, 'destroy'])
+        ->name('destroy');
+    });
+
+    // Permission
+    Route::prefix('permission/')->name('permission.')->group(function () {
+        Route::get('index', [PermissionController::class, 'index'])
+        ->name('index');
+        Route::get('create', [PermissionController::class, 'create'])
+        ->name('create');
+        Route::post('store', [PermissionController::class, 'store'])
+        ->name('store');
+        Route::get('{id}/edit', [PermissionController::class, 'edit'])
+        ->name('edit');
+        Route::post('{id}/update', [PermissionController::class, 'update'])
+        ->name('update');
+        Route::get('{id}/delete', [PermissionController::class, 'delete'])
+        ->name('delete');
+        Route::delete('{id}/destroy', [PermissionController::class, 'destroy'])
         ->name('destroy');
     });
 

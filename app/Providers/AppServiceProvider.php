@@ -17,11 +17,17 @@ class AppServiceProvider extends ServiceProvider
         'App\Services\Interfaces\LanguageServiceInterface' => 'App\Services\LanguageService',
         'App\Repositories\Interfaces\LanguageRepositoryInterface' => 'App\Repositories\LanguageRepository',
 
+        'App\Services\Interfaces\PermissionServiceInterface' => 'App\Services\PermissionService',
+        'App\Repositories\Interfaces\PermissionRepositoryInterface' => 'App\Repositories\PermissionRepository',
+
         'App\Services\Interfaces\PostCatalogueServiceInterface' => 'App\Services\PostCatalogueService',
         'App\Repositories\Interfaces\PostCatalogueRepositoryInterface' => 'App\Repositories\PostCatalogueRepository',
 
         'App\Services\Interfaces\PostServiceInterface' => 'App\Services\PostService',
         'App\Repositories\Interfaces\PostRepositoryInterface' => 'App\Repositories\PostRepository',
+
+        'App\Services\Interfaces\GenerateServiceInterface' => 'App\Services\GenerateService',
+        'App\Repositories\Interfaces\GenerateRepositoryInterface' => 'App\Repositories\GenerateRepository',
 
         'App\Repositories\Interfaces\ProvinceRepositoryInterface' => 'App\Repositories\ProvinceRepository',
         'App\Repositories\Interfaces\DistrictRepositoryInterface' => 'App\Repositories\DistrictRepository',

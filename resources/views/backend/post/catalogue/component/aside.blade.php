@@ -9,10 +9,12 @@
                         <p class="text-danger notice">{{ __('messages.parent_notice') }}</p>
                     <select name="parent_id" class="form-control setupSelect2">
                         @foreach ($dropdown as $key => $val)
-                            <option {{$key == old('parent_id', (isset($postCatalogue->parent_id)) ? $postCatalogue->parent_id : '')
-                                ? 'selected' : ''}}
-                                value="{{ $key }}"  value="{{ $key }}">{{ $val }}
-                            </option>
+                            @if ($key != $postCatalogue->id)
+                                <option {{$key == old('parent_id', (isset($postCatalogue->parent_id)) ? $postCatalogue->parent_id : '')
+                                    ? 'selected' : ''}}
+                                    value="{{ $key }}"  value="{{ $key }}">{{ $val }}
+                                </option>
+                            @endif
                         @endforeach
                         
                     </select>

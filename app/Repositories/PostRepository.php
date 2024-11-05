@@ -41,7 +41,7 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
             '=', 'posts.id')
             ->with('post_catalogues')
             ->where('tb2.language_id', '=', $language_id)
-            ->findOrFail($id);
+            ->find($id);
     }
 
 }

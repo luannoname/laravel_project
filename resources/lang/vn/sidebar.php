@@ -3,9 +3,9 @@
 return [
     'module' => [
         [
-            'title' => 'QL Thành Viên',
-            'icon' => 'fa fa-dashboard',
-            'name' => ['user'],
+            'title' => 'QL Nhóm Thành Viên',
+            'icon' => 'fa fa-user',
+            'name' => ['user', 'permission'],
             'subModule' => [
                 [
                     'title' => 'QL Nhóm Thành Viên',
@@ -14,6 +14,10 @@ return [
                 [
                     'title' => 'QL Thành Viên',
                     'route' => 'user/index',
+                ],
+                [
+                    'title' => 'QL Quyền',
+                    'route' => 'permission/index',
                 ],
             ],
         ],
@@ -35,12 +39,16 @@ return [
         [
             'title' => 'Cấu hình chung',
             'icon' => 'fa fa-cog',
-            'name' => ['language'],
+            'name' => ['language', 'generate'],
             'subModule' => [
                 [
                     'title' => 'QL Ngôn Ngữ',
                     'route' => 'language/index',
-                ]
+                ],
+                [
+                    'title' => 'QL Module',
+                    'route' => 'generate/index',
+                ],
             ],
         ],
         

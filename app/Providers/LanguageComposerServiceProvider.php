@@ -22,7 +22,7 @@ class LanguageComposerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         View::composer('backend.dashboard.component.nav', function ($view) {
+         View::composer('backend.dashboard.layout', function ($view) {
             $languageRepository = $this->app->make(LanguageRepository::class);
             $languages = $languageRepository->all();
             $view->with('languages', $languages);

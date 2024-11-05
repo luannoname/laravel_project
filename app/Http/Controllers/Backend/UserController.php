@@ -28,6 +28,7 @@ class UserController extends Controller
     }
 
     public function index(Request $request) {
+        $this->authorize('modules', 'user.index');
         $users = $this->userService->paginate($request);
         $config = [
             'js' => [
@@ -50,6 +51,7 @@ class UserController extends Controller
     }
 
     public function create() {
+        $this->authorize('modules', 'user.create');
         $provinces = $this->provinceRepository->all();
 
         $template = 'backend.user.user.store';
@@ -71,6 +73,7 @@ class UserController extends Controller
     }
 
     public function edit($id) {
+        $this->authorize('modules', 'user.update');
         $user = $this->userRepository->findById($id);
         $provinces = $this->provinceRepository->all();
 
@@ -94,6 +97,7 @@ class UserController extends Controller
     }
 
     public function delete($id) {
+        $this->authorize('modules', 'user.destroy');
         $user = $this->userRepository->findById($id);
         $config['seo'] = config('apps.user');
         $template = 'backend.user.user.delete';

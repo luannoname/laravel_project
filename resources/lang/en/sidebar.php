@@ -15,6 +15,10 @@ return [
                     'title' => 'Member',
                     'route' => 'user/index',
                 ],
+                [
+                    'title' => 'Permission',
+                    'route' => 'permission/index',
+                ],
             ],
         ],
         [

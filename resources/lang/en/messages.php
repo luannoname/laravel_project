@@ -15,6 +15,36 @@ return [
             'title' => 'Delete Post Category',
         ],
     ],
+    'post' => [
+        'index' => [
+            'title' => 'Manage Posts',
+            'table' => 'Posts List',
+        ],
+        'create' => [
+            'title' => 'Add New Post',
+        ],
+        'update' => [
+            'title' => 'Update Post',
+        ],
+        'delete' => [
+            'title' => 'Delete Post',
+        ],
+    ],
+    'permission' => [
+        'index' => [
+            'title' => 'Permission Management',
+            'table' => 'Permission List',
+        ],
+        'create' => [
+            'title' => 'Add New Permission',
+        ],
+        'update' => [
+            'title' => 'Update Permission',
+        ],
+        'delete' => [
+            'title' => 'Delete Permission',
+        ],
+    ],
     'parent' => 'Select Parent Category',
     'parent_notice' => '*Root will be automatically selected if no parent category is chosen',
     'image' => 'Select Featured Image',
@@ -40,13 +70,14 @@ return [
     'tableName' => 'Title',
     'tableOrder' => 'Sort',
     'tableGroup' => 'Display Group:',
+    'order' => 'Order',
     'deleteButton' => 'Delete Data',
     'tableHeading' => 'General Information',
     'save' => 'Save',
     'publish' => [
         '0' => 'Select Status',
-        '1' => 'Unpublished',
-        '2' => 'Published',
+        '1' => 'Published',
+        '2' => 'Unpublished',
     ],
     'follow' => [
         '1' => 'Follow',

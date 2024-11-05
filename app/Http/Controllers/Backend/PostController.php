@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Classes\Nestedsetbie;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
-use App\Services\Interfaces\PostServiceInterface as PostService;
+use App\Models\Language;
 use App\Repositories\Interfaces\PostRepositoryInterface as PostRepository;
+use App\Services\Interfaces\PostServiceInterface as PostService;
 use Illuminate\Http\Request;
-use App\Classes\Nestedsetbie;
 
 class PostController extends Controller
 {
@@ -21,18 +22,30 @@ class PostController extends Controller
         PostService $postService, 
         PostRepository $postRepository, 
     ) {
+        $this->middleware(function($request, $next) {
+            $locale = app()->getLocale();
+            $language = Language::where('canonical', $locale)->first();
+            $this->language = $language->id;
+            $this->initialize();
+            return $next($request);
+        });
+
         $this->postService = $postService;
         $this->postRepository = $postRepository;
+        $this->initialize();
+    }
+
+    private function initialize() {
         $this->nestedset = new Nestedsetbie([
             'table' => 'post_catalogues',
             'foreignkey' => 'post_catalogue_id',
-            'language_id' => 1,
+            'language_id' => $this->language,
         ]);
-        $this->language = $this->currentLanguage();
     }
 
     public function index(Request $request) {
-        $posts = $this->postService->paginate($request);
+        $this->authorize('modules', 'post.index');
+        $posts = $this->postService->paginate($request, $this->language);
         
         $config = [
             'js' => [
@@ -45,7 +58,7 @@ class PostController extends Controller
             ],
             'model' => 'Post',
         ];
-        $config['seo'] = config('apps.post');
+        $config['seo'] = __('messages.post');
         $dropdown = $this->nestedset->Dropdown();
         $template = 'backend.post.post.index';
         return view('backend.dashboard.layout', compact(
@@ -57,9 +70,10 @@ class PostController extends Controller
     }
 
     public function create() {
+        $this->authorize('modules', 'post.create');
         $config = $this->configData();
         $template = 'backend.post.post.store';
-        $config['seo'] = config('apps.post');
+        $config['seo'] = __('messages.post');
         $config['method'] = 'create';
         $dropdown = $this->nestedset->Dropdown();
         return view('backend.dashboard.layout', compact(
@@ -70,16 +84,17 @@ class PostController extends Controller
     }
 
     public function store(StorePostRequest $request) {
-        if ($this->postService->create($request)) {
+        if ($this->postService->create($request, $this->language)) {
             return redirect()->route('post.index')->with('success', 'Thêm mới bản ghi thành công.');
         }
         return redirect()->route('postCatalogue.index')->with('error', 'Thêm mới bản ghi thất bại. Hãy thử lại.');
     }
 
     public function edit($id) {
+        $this->authorize('modules', 'post.update');
         $post = $this->postRepository->getPostById($id, $this->language);
         $config = $this->configData();
-        $config['seo'] = config('apps.post');
+        $config['seo'] = __('messages.post');
         $config['method'] = 'update';
         $dropdown = $this->nestedset->Dropdown();
         $album = json_decode($post->album);
@@ -94,16 +109,17 @@ class PostController extends Controller
     }
 
     public function update($id, UpdatePostRequest $request) {
-        if ($this->postService->update($id, $request)) {
+        if ($this->postService->update($id, $request, $this->language)) {
             return redirect()->route('post.index')->with('success', 'Cập nhật bản ghi thành công.');
         }
         return redirect()->route('post.index')->with('error', 'Cập nhật bản ghi thất bại. Hãy thử lại.');
     }
 
     public function delete($id) {
+        $this->authorize('modules', 'post.destroy');
         $post = $this->postRepository->getPostById($id, $this->language);
         
-        $config['seo'] = config('apps.post');
+        $config['seo'] = __('messages.post');
         $template = 'backend.post.post.delete';
         return view('backend.dashboard.layout', compact(
             'template',

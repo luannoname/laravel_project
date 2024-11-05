@@ -45,16 +45,19 @@ class PostCatalogueService extends BaseService implements PostCatalogueServiceIn
                 ['tb2.language_id', '=', $this->language]
             ],
         ];
+        $paginationConfig = ['path' => 'post/catalogue/index'];
+        $joins = [
+            ['post_catalogue_language as tb2', 'tb2.post_catalogue_id', '=', 'post_catalogues.id'],
+        ];
+        $orderBy = ['post_catalogues.lft', 'asc'];
+        
         $postCatalogues = $this->postCatalogueRepository->pagination(
             $this->paginateSelect(), 
             $condition, 
             $perPage,
-            ['path' => 'post/catalogue/index'],
-            ['post_catalogues.lft', 'ASC'],
-            [
-                ['post_catalogue_language as tb2', 'tb2.post_catalogue_id', '=', 'post_catalogues.id'],
-            ],
-            
+            $paginationConfig,
+            $orderBy,
+            $joins,
         );
         return $postCatalogues;
     }
@@ -187,6 +190,7 @@ class PostCatalogueService extends BaseService implements PostCatalogueServiceIn
             'post_catalogues.image',
             'post_catalogues.publish',
             'post_catalogues.level',
+            'post_catalogues.lft',
             'post_catalogues.order',
             'tb2.name',
             'tb2.canonical',

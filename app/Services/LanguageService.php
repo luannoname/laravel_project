@@ -23,8 +23,10 @@ class LanguageService implements LanguageServiceInterface
         $this->languageRepository = $languageRepository;
     }
     public function paginate($request) {
-        $condition['keyword'] = addslashes($request->input('keyword'));
-        $condition['publish'] = $request->integer('publish');
+        $condition = [
+            'keyword' => addslashes($request->input('keyword')),
+            'publish' => $request->integer('publish'),
+        ];
         $perPage = $request->integer('perpage');
         $languages = $this->languageRepository->pagination(
             $this->paginateSelect(),
@@ -135,6 +137,44 @@ class LanguageService implements LanguageServiceInterface
         }
     }
 
+    public function saveTranslate($option, $request) {
+        DB::beginTransaction();
+        try {
+            $payload = [
+                'name' => $request->input('translate_name'),
+                'description' => $request->input('translate_description'),
+                'content' => $request->input('translate_content'),
+                'meta_title' => $request->input('translate_meta_title'),
+                'meta_keyword' => $request->input('translate_meta_keyword'),
+                'meta_description' => $request->input('translate_meta_description'),
+                'canonical' => $request->input('translate_canonical'),
+                $this->converModelToField($option['model']) => $option['id'],
+                'language_id' => $option['languageId'],
+            ];
+
+            $repositoryNamespace = '\App\Repositories\\' .ucfirst($option['model']) . 'Repository';
+            if (class_exists($repositoryNamespace)) {
+                $repositoryInstance = app($repositoryNamespace);
+            }
+            $model = $repositoryInstance->findById($option['id']);
+            $model->languages()->detach([$option['languageId'], $model->id]);
+            $repositoryInstance->createPivot($model, $payload, 'languages');
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Log::error($e->getMessage());
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function converModelToField($model) {
+        $temp = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $model));
+        return $temp.'_id';
+    }
+
     private function paginateSelect() {
         return [
             'id',
@@ -144,30 +184,5 @@ class LanguageService implements LanguageServiceInterface
             'publish',
         ];
     }
-
-    // private function changeUserStatus($post, $value) {
-        
-    //     DB::beginTransaction();
-    //     try {
-    //         $array = [];
-    //         if(isset($post['modelId'])) {
-    //             $array[] = $post['modelId'];
-    //         } else {
-    //             $array = $post['id'];
-    //         }
-    //         $payload[$post['field']] = $value;
-    //         $this->userRepository->updateByWhereIn('user_catalogue_id', $array, $payload);
-
-    //         DB::commit();
-    //         return true;
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-
-    //         echo $e->getMessage();die();
-    //         return false;
-    //     }
-    // }
-
-    
     
 }

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Classes\Nestedsetbie;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DeletePostCatalogueRequest;
 use App\Http\Requests\StorePostCatalogueRequest;
 use App\Http\Requests\UpdatePostCatalogueRequest;
-use App\Http\Requests\DeletePostCatalogueRequest;
-use App\Services\Interfaces\PostCatalogueServiceInterface as PostCatalogueService;
+use App\Models\Language;
 use App\Repositories\Interfaces\PostCatalogueRepositoryInterface as PostCatalogueRepository;
+use App\Services\Interfaces\PostCatalogueServiceInterface as PostCatalogueService;
 use Illuminate\Http\Request;
-use App\Classes\Nestedsetbie;
 
 class PostCatalogueController extends Controller
 {
@@ -22,17 +23,29 @@ class PostCatalogueController extends Controller
         PostCatalogueService $postCatalogueService, 
         PostCatalogueRepository $postCatalogueRepository, 
     ) {
+        $this->middleware(function($request, $next){
+            $locale = app()->getLocale();
+            $language = Language::where('canonical', $locale)->first();
+            $this->language = $language->id;
+            $this->initialize();
+            return $next($request);
+        });
+
+
         $this->postCatalogueService = $postCatalogueService;
         $this->postCatalogueRepository = $postCatalogueRepository;
+    }
+
+    private function initialize(){
         $this->nestedset = new Nestedsetbie([
             'table' => 'post_catalogues',
             'foreignkey' => 'post_catalogue_id',
-            'language_id' => 1,
+            'language_id' =>  1,
         ]);
-        $this->language = $this->currentLanguage();
-    }
+    } 
 
     public function index(Request $request) {
+        $this->authorize('modules', 'post.catalogue.index');
         $postCatalogues = $this->postCatalogueService->paginate($request);
         $config = [
             'js' => [
@@ -55,6 +68,7 @@ class PostCatalogueController extends Controller
     }
 
     public function create() {
+        $this->authorize('modules', 'post.catalogue.create');
         $config = $this->configData();
         $template = 'backend.post.catalogue.store';
         $config['seo'] = __('messages.postCatalogue');
@@ -75,6 +89,7 @@ class PostCatalogueController extends Controller
     }
 
     public function edit($id) {
+        $this->authorize('modules', 'post.catalogue.update');
         $postCatalogue = $this->postCatalogueRepository->getPostCatalogueById($id, $this->language);
 
         $config = $this->configData();
@@ -100,6 +115,7 @@ class PostCatalogueController extends Controller
     }
 
     public function delete($id) {
+        $this->authorize('modules', 'post.catalogue.destroy');
         $postCatalogue = $this->postCatalogueRepository->getPostCatalogueById($id, $this->language);
         
         $config['seo'] = __('messages.postCatalogue');

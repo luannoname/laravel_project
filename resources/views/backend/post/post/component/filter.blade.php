@@ -8,7 +8,7 @@
                 <div class="uk-flex uk-flex-middle uk-flex-space-between">
                     <select name="perpage" class="form-control input-control input-sm perpage filter mr-10">
                         @for($i = 20; $i <= 200; $i+=20)
-                            <option {{ ($perpage == $i) ? 'selected' : '' }} value="{{ $i }}">{{ $i }} bản ghi</option>
+                            <option {{ ($perpage == $i) ? 'selected' : '' }} value="{{ $i }}">{{ $i }} {{ __('messages.perpage') }}</option>
                         @endfor
                     </select>
                 </div>
@@ -34,15 +34,15 @@
                             <input type="text"
                                    name="keyword"
                                    value="{{ request('keyword') ?: old('keyword') }}"
-                                   placeholder="Nhập Từ Khóa bạn muốn tìm kiếm..."
+                                   placeholder="{{ __('messages.searchInput') }}"
                                    class="form-control">
                             <span class="input-group-btn">
                                 <button type="submit" name="search" value="search"
-                                    class="btn btn-primary mb0 btn-sm">Tìm kiếm</button>
+                                    class="btn btn-primary mb0 btn-sm">{{ __('messages.search') }}</button>
                             </span>
                         </div>
                     </div>
-                    <a href="{{ route('post.create') }}" class="btn btn-danger"><i class="fa fa-plus mr-5"></i>{{ config('apps.post.create.title') }}</a>
+                    <a href="{{ route('post.create') }}" class="btn btn-danger"><i class="fa fa-plus mr-5"></i>{{ __('messages.post.create.title') }}</a>
                 </div>
             </div>
         </div>
