@@ -1,4 +1,4 @@
-<form action="{{ route('post.catalogue.index') }}">
+<form action="{{ route('product.catalogue.index') }}">
     <div class="filter-wraper">
         <div class="uk-flex uk-flex-middle uk-flex-space-between">
             @include('backend.dashboard.component.perpage')
@@ -6,10 +6,9 @@
                 <div class="uk-flex uk-flex-middle">
                     @include('backend.dashboard.component.filterPublish')
                     @include('backend.dashboard.component.keyword')
-                    <a href="{{ route('post.catalogue.create') }}" class="btn btn-danger"><i class="fa fa-plus mr-5"></i>{{ __('messages.postCatalogue.create.title') }}</a>
+                    <a href="{{ route('product.catalogue.create') }}" class="btn btn-danger"><i class="fa fa-plus mr-5"></i>{{ __('messages.productCatalogue.create.title') }}</a>
                 </div>
             </div>
         </div>
     </div>
-    
 </form>

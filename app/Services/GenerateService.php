@@ -41,22 +41,21 @@ class GenerateService implements GenerateServiceInterface
         DB::beginTransaction();
         try {
             // $database = $this->makeDatabase($request);
-            $controller = $this->makeDatabase($request);
+            // $controller = $this->makeController($request);
+            // $model = $this->makeModel($request);
+            // $repositoty = $this->makeRepository($request);
+            // $service = $this->makeService($request);
+            // $provider = $this->makeProvider($request);
+            // $makeRequest = $this->makeRequest($request);
+            $view = $this->makeView($request);
 
-            // $this->makeController();
-            // $this->makeModel();
-            // $this->makeRepository();
-            // $this->makeService();
-            // $this->makeProvider();
-            // $this->makeRequest();
-            // $this->makeView();
-            // $this->makeRoutes();
-            // $this->makeRule();
-            // $this->makeLang();
+            // $routes = $this->makeRoutes($request);
+            // $rule = $this->makeRule($request);
+            // $lang = $this->makeLang($request);
 
-            $payload = $request->except(['_token', 'send']);
-            $payload['user_id'] = Auth::id();
-            $generate = $this->generateRepository->create($payload);
+            // $payload = $request->except(['_token', 'send']);
+            // $payload['user_id'] = Auth::id();
+            // $generate = $this->generateRepository->create($payload);
             DB::commit();
             return true;
         } catch (\Exception $e) {
@@ -158,6 +157,297 @@ MIGRATION;
         return $temp;
     }
 
+    private function makeController($request) {
+        $payload = $request->only('name', 'module_type');
+        switch ($payload['module_type']) {
+            case 1:
+                $this->createTemplateController($payload['name'], 'TemplateCatalogueController');
+                break;
+
+            case 2:
+                $this->createTemplateController($payload['name'], 'TemplateController');
+                break;
+            
+            default:
+                $this->createSingleController();
+        }
+    }
+
+    private function createTemplateController($name, $controllerFile) {
+        try {
+            $controllerName = $name.'Controller.php';
+            $templateControllerPath = base_path('app/Templates/'.$controllerFile.'.php');
+            $controllerContent = file_get_contents($templateControllerPath);
+            $replace = [
+                'ModuleTemplate' => $name,
+                'moduleTemplate' => lcfirst($name),
+                'foreignKey' => $this->converModuleNameToTableName($name).'_id',
+                'tableName' => $this->converModuleNameToTableName($name).'s',
+                'moduleView' => str_replace('_', '.', $this->converModuleNameToTableName($name)),
+            ];
+
+            foreach ($replace as $key => $val) {
+                $controllerContent = str_replace('{'.$key.'}', $replace[$key], $controllerContent);
+            }
+            
+            $controllerPath = base_path('app/Http/Controllers/Backend/'.$controllerName);
+            FILE::put($controllerPath, $controllerContent);
+            die();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function makeModel($request) {
+        try {
+            if ($request->input('module_type') == 1) {
+                $this->createModelTemplate($request);
+            } else {
+                dd(1);
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function createModelTemplate($request) {
+        $modelName = $request->input('name').'.php';
+        $templateModelPath = base_path('app/Templates/TemplateCatalogueModel.php');
+        $modelContent = file_get_contents($templateModelPath);
+        $module = $this->converModuleNameToTableName($request->input('name'));
+        $extractModule = explode('_', $module);
+        $replace = [
+            'ModuleTemplate' => $request->input('name'),
+            'foreignKey' => $module.'_id',
+            'tableName' => $module.'s',
+            'relation' => $extractModule[0],
+            'pivotModel' => $request->input('name').'Language',
+            'relationPivot' => $module.'_'.$extractModule[0],
+            'pivotTable' => $module.'_language',
+            'module' => $module,
+            'relationModel' => ucfirst($extractModule[0]),
+        ];
+
+        foreach ($replace as $key => $val) {
+            $modelContent = str_replace('{'.$key.'}', $replace[$key], $modelContent);
+        }
+        
+        $modelPath = base_path('app/Models/'.$modelName);
+        FILE::put($modelPath, $modelContent);
+    }
+
+    private function makeRepository($request) {
+        try {
+            $name = $request->input('name');
+            $module = $this->converModuleNameToTableName($name);
+            $moduleExtract = explode('_', $module);
+
+            $repository = $this->initializeServiceLayer('Repository', 'Repositories', $request);
+            $replace = [
+                'Module' => $name,
+            ];
+
+            $repositoryInterfaceContent = $repository['interface']['layerInterfaceContent'];
+            $repositoryInterfaceContent = str_replace('{Module}', $replace['Module'], $repositoryInterfaceContent);
+
+            $replaceRepository = [
+                'Module' => $name,
+                'tableName' => $module.'s',
+                'pivotTableName' => $module.'_'.$moduleExtract[0],
+                'foreignKey' => $module.'_id',
+            ];
+            $repositoryContent = $repository['service']['layerContent'];
+            foreach ($replaceRepository as $key => $val) {
+                $repositoryContent = str_replace('{'.$key.'}', $replaceRepository[$key], $repositoryContent);
+            }
+            FILE::put($repository['interface']['layerInterfacePath'], $repositoryInterfaceContent);
+            FILE::put($repository['service']['layerPathPut'], $repositoryContent);
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function makeService($request) {
+        try {
+            $name = $request->input('name');
+            $module = $this->converModuleNameToTableName($name);
+            $moduleExtract = explode('_', $module);
+
+            $service = $this->initializeServiceLayer('Service', 'Services', $request);
+           
+            $replace = [
+                'Module' => $name,
+            ];
+
+            $serviceInterfaceContent = $service['interface']['layerInterfaceContent'];
+            $serviceInterfaceContent = str_replace('{Module}', $replace['Module'], $serviceInterfaceContent);
+
+            $replaceService = [
+                'Module' => $name,
+                'module' => lcfirst($name),
+                'moduleView' => str_replace('_', '.', $this->converModuleNameToTableName($name)),
+                'tableName' => $module.'s',
+                'foreignKey' => $module.'_id',
+            ];
+            $serviceContent = $service['service']['layerContent'];
+            foreach ($replaceService as $key => $val) {
+                $serviceContent = str_replace('{'.$key.'}', $replaceService[$key], $serviceContent);
+            }
+            FILE::put($service['interface']['layerInterfacePath'], $serviceInterfaceContent);
+            FILE::put($service['service']['layerPathPut'], $serviceContent);
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function initializeServiceLayer($layer = '', $folder = '', $request) {
+        $name = $request->input('name');
+        
+        $option = [
+            $layer.'Name' => $name.$layer,
+            $layer.'Interface' => $name.$layer.'Interface',
+        ];
+        $layerInterfaceRead = base_path('app/Templates/Template'.$layer.'Interface.php' );
+        $layerInterfaceContent = file_get_contents($layerInterfaceRead);
+        $layerInterfacePath = base_path('app/'.$folder.'/Interfaces/'.$option[$layer.'Interface'].'.php');
+        
+        $layerPathRead = base_path('app/Templates/Template'.$layer.'.php' );
+        $layerContent = file_get_contents($layerPathRead);
+        $layerPathPut = base_path('app/'.$folder.'/'.$option[$layer.'Name'].'.php');
+
+        return [
+            'interface' => [
+                'layerInterfaceContent' => $layerInterfaceContent,
+                'layerInterfacePath' => $layerInterfacePath,
+            ],
+            'service' => [
+                'layerContent' => $layerContent,
+                'layerPathPut' => $layerPathPut,
+            ],
+        ];
+    }
+
+    private function makeProvider($request) {
+        try {
+            $name = $request->input('name');
+            $provider = [
+                'providerPath' => base_path('app/Providers/AppServiceProvider.php'),
+                'repositoryProviderPath' => base_path('app/Providers/RepositoryServiceProvider.php'),
+            ];
+
+            foreach ($provider as $key => $val) {
+                $content = file_get_contents($val);
+                $insertLine = ($key == 0) ? "'App\\Services\\Interfaces\\{$name}ServiceInterface' => 'App\\Services\\{$name}Service'," : "'AppRepositoriesInterfaces\\{$name}RepositoryInterface' => 'App\\Repositories\\{$name}Repository',";
+
+                $position = strpos($content, '];');
+                if ($position !== false) {
+                    $newContent = substr_replace($content,"    ". $insertLine."\n"."    ", $position, 0);
+                }
+                File::put($val, $newContent);
+            }
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+    
+    private function makeRequest($request) {
+        try {
+            // StoreModuleRequest, UpdateModuleRequest, DeleteModuleRequest
+            $name = $request->input('name');
+            $requestArray = [
+                'Store'.$name.'Request', 
+                'Update'.$name.'Request', 
+                'Delete'.$name.'Request',
+            ];
+            $requestTemplate = [
+                'RequestTemplateStore',
+                'RequestTemplateUpdate',
+                'RequestTemplateDelete',
+            ];
+            
+            if ($request->input('module_type') != 1) {
+                unset($requestArray[2]);
+                unset($requestTemplate[2]);
+            } 
+            foreach ($requestTemplate as $key => $val) {
+                $requestPath = base_path('app/Templates/'.$val.'.php');
+                $requestContent = file_get_contents($requestPath);
+                $requestContent = str_replace('{Module}', $name, $requestContent);
+                $requestPut = base_path('app/Http/Requests/'.$requestArray[$key].'.php');
+                FILE::put($requestPut, $requestContent);
+            }
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+    }
+
+    private function makeView($request) {
+        try {
+            $name = $request->input('name');
+            $module = $this->converModuleNameToTableName($name);
+            $extractModule = explode('_', $module);
+            $basePath = resource_path("views/backend/{$extractModule[0]}");
+            $folderPath = (count($extractModule) == 2) ? "$basePath/{$extractModule[1]}" : "$basePath/{$extractModule[0]}";
+            $componentPath = "$folderPath/component";
+
+            $this->createDirectory($folderPath);
+            $this->createDirectory($componentPath);
+            
+            $sourcePath = base_path('app/Templates/views/'.((count($extractModule) == 2) ? 'catalogue' : 'post').'/');
+            $viewPath = (count($extractModule) == 2) ? "{$extractModule[0]}.{$extractModule[1]}" : $extractModule[0];
+            $replacement = [
+                'view' => $viewPath,
+                'module' => lcfirst($name),
+                'Module' => $name,
+            ];
+
+            $fileArray = ['store.blade.php', 'index.blade.php', 'delete.blade.php',];
+            $componentFile = ['aside.blade.php', 'filter.blade.php', 'table.blade.php'];
+            $this->copyAndReplaceContent($sourcePath, $folderPath, $fileArray, $replacement);
+            $this->copyAndReplaceContent("{$sourcePath}component/", $componentPath, $componentFile, $replacement);
+            return true;
+        } catch (\Exception $e) {
+            echo $e->getMessage();die();
+            return false;
+        }
+        
+    }
+
+    private function createDirectory($path) {
+        if (!FILE::exists($path)) {
+            File::makeDirectory($path, 0755, true);
+        }
+    }
+
+    private function copyAndReplaceContent(string $sourcePath, string $destinationPath, array $fileArray, array $replacement) {
+        foreach ($fileArray as $key => $val) {
+            $sourceFile = $sourcePath.$val;
+            $destination = "{$destinationPath}/{$val}";
+            $content = file_get_contents($sourceFile);
+            foreach ($replacement as $keyReplace => $replace) {
+                $content = str_replace('{'.$keyReplace.'}', $replace, $content);
+            }
+            if (!FILE::exists($destination)) {
+                FILE::put($destination, $content);
+            }
+        }
+    }
+
     public function update($id, $request) {
         DB::beginTransaction();
         try {
@@ -185,44 +475,6 @@ MIGRATION;
             echo $e->getMessage();die();
             return false;
         }
-    }
-
-    public function saveTranslate($option, $request) {
-        DB::beginTransaction();
-        try {
-            $payload = [
-                'name' => $request->input('translate_name'),
-                'description' => $request->input('translate_description'),
-                'content' => $request->input('translate_content'),
-                'meta_title' => $request->input('translate_meta_title'),
-                'meta_keyword' => $request->input('translate_meta_keyword'),
-                'meta_description' => $request->input('translate_meta_description'),
-                'canonical' => $request->input('translate_canonical'),
-                $this->converModelToField($option['model']) => $option['id'],
-                'language_id' => $option['languageId'],
-            ];
-
-            $repositoryNamespace = '\App\Repositories\\' .ucfirst($option['model']) . 'Repository';
-            if (class_exists($repositoryNamespace)) {
-                $repositoryInstance = app($repositoryNamespace);
-            }
-            $model = $repositoryInstance->findById($option['id']);
-            $model->languages()->detach([$option['languageId'], $model->id]);
-            $repositoryInstance->createPivot($model, $payload, 'languages');
-
-            DB::commit();
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // Log::error($e->getMessage());
-            echo $e->getMessage();die();
-            return false;
-        }
-    }
-
-    private function converModelToField($model) {
-        $temp = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $model));
-        return $temp.'_id';
     }
 
     private function paginateSelect() {

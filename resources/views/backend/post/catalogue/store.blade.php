@@ -1,14 +1,6 @@
 
 @include('backend.dashboard.component.breadcrumb', ['title' => $config['seo'][$config['method']]['title']])
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+@include('backend.dashboard.component.formError')
 @php
     $url = ($config['method'] == 'create') ? route('post.catalogue.store') : route('post.catalogue.update', $postCatalogue->id);
 @endphp
@@ -22,20 +14,17 @@
                         <h5>{{ __('messages.tableHeading') }}</h5>
                     </div>
                     <div class="ibox-content">
-                        @include('backend.post.catalogue.component.general')
+                        @include('backend.dashboard.component.content', ['model' => ($postCatalogue) ?? null])
                     </div>
                 </div>
-                @include('backend.dashboard.component.album')
-                @include('backend.post.catalogue.component.seo')
+                @include('backend.dashboard.component.album', ['model' => ($postCatalogue) ?? null])
+                @include('backend.dashboard.component.seo', ['model' => ($postCatalogue) ?? null])
             </div>
             <div class="col-lg-3">
                 @include('backend.post.catalogue.component.aside')
             </div>
         </div>
         <hr>
-        
-        <div class="text-right mb-15 button-fix">
-            <button type="submit" class="btn btn-primary" name="send" value="send">{{ __('messages.save') }}</button>
-        </div>
+        @include('backend.dashboard.component.button')
     </div>
 </form>

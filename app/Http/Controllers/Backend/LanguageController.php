@@ -129,7 +129,7 @@ class LanguageController extends Controller
         
         $languageInstance = $this->repositoryInstance('Language');
         $currentLanguage = $languageInstance->findByCondition([
-            ['canonical', '=', session('app_locale')]
+            ['canonical', '=', session('app_locale', 1)]
         ]);
 
         $method = 'get'.$model.'ById';

@@ -46,7 +46,7 @@ class PostCatalogueController extends Controller
 
     public function index(Request $request) {
         $this->authorize('modules', 'post.catalogue.index');
-        $postCatalogues = $this->postCatalogueService->paginate($request);
+        $postCatalogues = $this->postCatalogueService->paginate($request, $this->language);
         $config = [
             'js' => [
                 'backend/js/plugins/switchery/switchery.js',
@@ -82,7 +82,7 @@ class PostCatalogueController extends Controller
     }
 
     public function store(StorePostCatalogueRequest $request) {
-        if ($this->postCatalogueService->create($request)) {
+        if ($this->postCatalogueService->create($request, $this->language)) {
             return redirect()->route('post.catalogue.index')->with('success', 'Thêm mới bản ghi thành công.');
         }
         return redirect()->route('postCatalogue.index')->with('error', 'Thêm mới bản ghi thất bại. Hãy thử lại.');
@@ -108,7 +108,7 @@ class PostCatalogueController extends Controller
     }
 
     public function update($id, UpdatePostCatalogueRequest $request) {
-        if ($this->postCatalogueService->update($id, $request)) {
+        if ($this->postCatalogueService->update($id, $request, $this->language)) {
             return redirect()->route('post.catalogue.index')->with('success', 'Cập nhật bản ghi thành công.');
         }
         return redirect()->route('post.catalogue.index')->with('error', 'Cập nhật bản ghi thất bại. Hãy thử lại.');
@@ -128,7 +128,7 @@ class PostCatalogueController extends Controller
     }
 
     public function destroy($id, DeletePostCatalogueRequest $request) {
-        if ($this->postCatalogueService->destroy($id)) {
+        if ($this->postCatalogueService->destroy($id, $this->language)) {
             return redirect()->route('post.catalogue.index')->with('success', 'Xóa bản ghi thành công.');
         }
         return redirect()->route('post.catalogue.index')->with('error', 'Xóa bản ghi thất bại. Hãy thử lại.');
